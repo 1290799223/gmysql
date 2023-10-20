@@ -21,7 +21,7 @@ type Db struct {
 	DbName   string
 	Conn     *sql.DB
 }
-type dbRow map[string]interface{}
+type DbRow map[string]interface{}
 
 // 数据库操作接口
 func NewDb(ip string, port int, username string, password string, dbname string) *Db {
@@ -86,7 +86,7 @@ func (this *Db) Query(sql string) map[int]map[string]string {
 	return result
 }
 
-func scanRow(rows *sql.Rows) (dbRow, error) {
+func scanRow(rows *sql.Rows) (DbRow, error) {
 	columns, _ := rows.Columns()
 
 	vals := make([]interface{}, len(columns))
@@ -102,7 +102,7 @@ func scanRow(rows *sql.Rows) (dbRow, error) {
 		return nil, err
 	}
 
-	r := make(dbRow)
+	r := make(DbRow)
 
 	for i, v := range columns {
 		if va, ok := vals[i].([]byte); ok {
@@ -117,7 +117,7 @@ func scanRow(rows *sql.Rows) (dbRow, error) {
 }
 
 // 获取一行记录
-func (this *Db) GetOne(sql string, args ...interface{}) (dbRow, error) {
+func (this *Db) GetOne(sql string, args ...interface{}) (DbRow, error) {
 	rows, err := this.Conn.Query(sql, args...)
 	if err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ func (this *Db) GetOne(sql string, args ...interface{}) (dbRow, error) {
 }
 
 // 获取多行记录
-func (this *Db) GetAll(sql string, args ...interface{}) ([]dbRow, error) {
+func (this *Db) GetAll(sql string, args ...interface{}) ([]DbRow, error) {
 	rows, err := this.Conn.Query(sql, args...)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (this *Db) GetAll(sql string, args ...interface{}) ([]dbRow, error) {
 
 	defer rows.Close()
 
-	result := make([]dbRow, 0)
+	result := make([]DbRow, 0)
 
 	for rows.Next() {
 		r, err := scanRow(rows)
@@ -156,13 +156,13 @@ func (this *Db) GetAll(sql string, args ...interface{}) ([]dbRow, error) {
 // 插入记录
 /*
 	使用方法
-	ins := make(dbRow)
+	ins := make(DbRow)
 	ins["proxy"] = "1.1.1.1:8088"
 	ins["id"] = "9999"
 	db.Insert("secret", ins)
 
 */
-func (this *Db) Insert(table string, data dbRow) (int64, error) {
+func (this *Db) Insert(table string, data DbRow) (int64, error) {
 	fields := make([]string, 0)
 	vals := make([]interface{}, 0)
 	placeHolder := make([]string, 0)
@@ -190,13 +190,13 @@ func (this *Db) Insert(table string, data dbRow) (int64, error) {
 // 更新记录
 /*
 	使用方法
-	upd := make(dbRow)
+	upd := make(DbRow)
 	upd["proxy"] = "1.1.1.1:8088"
 	upd["error"] = "1"
 	db.Update("secret", "id=? and error=?", upd, 1, 0)
 
 */
-func (this *Db) Update(table, condition string, data dbRow, args ...interface{}) (int64, error) {
+func (this *Db) Update(table, condition string, data DbRow, args ...interface{}) (int64, error) {
 	params := make([]string, 0)
 	vals := make([]interface{}, 0)
 
